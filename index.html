@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Myanmar Bill Calculator</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0A0E1A">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+    <style>
+        :root {
+            --bg: #0A0E1A;
+            --surface: #1C2333; /* Slightly lighter than bg */
+            --surface-elevated: #2E364F;
+            --text: #FFFFFF;
+            --text-muted: #9CA3AF;
+            --accent: #FBBF24; /* Electricity Yellow/Orange */
+            --danger: #EF4444;
+            --border: #374151;
+            --success: #34D399;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        
+        body { background-color: var(--bg); color: var(--text); padding: 20px; padding-bottom: 80px; -webkit-tap-highlight-color: transparent; }
+
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; margin-top: 20px; }
+        .header h1 { font-size: 24px; font-weight: bold; }
+        .header p { color: var(--accent); font-size: 14px; margin-top: 4px; }
+        .icon-btn { background: var(--surface); border: none; padding: 10px; border-radius: 12px; color: var(--accent); font-size: 22px; cursor: pointer; margin-left: 10px; }
+
+        /* Tabs */
+        .tabs { display: flex; background: var(--surface); padding: 5px; border-radius: 12px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; background: none; border: none; color: var(--text-muted); padding: 12px; border-radius: 10px; font-weight: bold; font-size: 12px; cursor: pointer; transition: 0.2s; }
+        .tab-btn.active { background: var(--surface-elevated); color: var(--accent); }
+
+        /* Inputs */
+        .card { background: var(--surface); padding: 20px; border-radius: 20px; border: 1px solid var(--border); }
+        .input-row { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+        .input-group { flex: 1; }
+        .label { color: var(--text-muted); font-size: 11px; font-weight: bold; margin-bottom: 8px; display: block; text-align: center; }
+        .input-field { width: 100%; background: var(--surface-elevated); border: none; padding: 15px; border-radius: 15px; color: var(--text); font-size: 20px; font-weight: bold; text-align: center; outline: none; }
+        
+        /* Calculate Button */
+        .calc-btn { width: 100%; background: var(--accent); color: var(--bg); border: none; padding: 18px; border-radius: 18px; font-size: 16px; font-weight: bold; margin-top: 25px; cursor: pointer; }
+        .calc-btn:active { opacity: 0.9; transform: scale(0.98); }
+
+        /* Result Area */
+        #result-area { display: none; margin-top: 25px; background: var(--surface-elevated); padding: 20px; border-radius: 20px; border-left: 6px solid var(--accent); animation: fadeIn 0.5s ease; }
+        .total-cost { font-size: 26px; font-weight: bold; color: var(--text); }
+        .sub-text { color: var(--text-muted); font-size: 13px; margin-top: 5px; margin-bottom: 15px; }
+        
+        .tier-row { display: flex; align-items: center; margin-bottom: 8px; font-size: 12px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 10px; }
+        .tier-cost { margin-left: auto; font-weight: bold; }
+
+        /* Appliances List */
+        .app-item { background: var(--surface); border: 1px solid var(--border); padding: 15px; border-radius: 15px; margin-bottom: 15px; }
+        .app-header { display: flex; align-items: center; margin-bottom: 12px; }
+        .app-icon { font-size: 22px; margin-right: 10px; }
+        .app-controls { display: flex; justify-content: space-between; align-items: center; }
+        .counter { display: flex; align-items: center; }
+        .count-btn { width: 30px; height: 30px; background: var(--accent); border: none; border-radius: 8px; color: var(--bg); font-weight: bold; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+        .count-val { margin: 0 12px; font-weight: bold; width: 20px; text-align: center; }
+        .hour-input { width: 50px; background: var(--surface-elevated); border: none; color: var(--accent); padding: 8px; border-radius: 8px; text-align: center; font-weight: bold; }
+
+        /* Modals */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; align-items: flex-end; }
+        .modal.open { display: flex; animation: slideUp 0.3s; }
+        .modal-content { background: var(--surface); width: 100%; max-height: 85vh; border-top-left-radius: 25px; border-top-right-radius: 25px; padding: 25px; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .close-btn { background: none; border: none; color: var(--text); font-size: 24px; }
+        
+        .history-item { border-bottom: 1px solid var(--border); padding: 12px 0; }
+        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .setting-input { width: 70px; padding: 8px; border-radius: 8px; background: var(--surface-elevated); border: none; color: var(--accent); text-align: right; font-weight: bold; }
+
+        /* Footer */
+        .footer { text-align: center; margin-top: 40px; opacity: 0.6; }
+        .footer h3 { font-size: 14px; margin-bottom: 5px; }
+        .footer p { font-size: 10px; color: var(--text-muted); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div>
+            <h1>မီတာခတွက်မယ်</h1>
+            <p>၂၀၂၄ စက်တင်ဘာ နှုန်းထားသစ် ⚡</p>
+        </div>
+        <div style="display: flex;">
+            <button class="icon-btn" onclick="openModal('settingsModal')"><ion-icon name="settings-outline"></ion-icon></button>
+            <button class="icon-btn" onclick="openModal('historyModal')"><ion-icon name="time-outline"></ion-icon></button>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchMode('readings')" id="btn-readings">ယူနစ်ဖတ်</button>
+        <button class="tab-btn" onclick="switchMode('units')" id="btn-units">ယူနစ်တိုက်ရိုက်</button>
+        <button class="tab-btn" onclick="switchMode('appliances')" id="btn-appliances">ပစ္စည်းအလိုက်</button>
+    </div>
+
+    <div class="card">
+        <div id="mode-readings" class="mode-content">
+            <div class="input-row">
+                <div class="input-group">
+                    <label class="label">ယခင်လ</label>
+                    <input type="number" id="prevReading" class="input-field" placeholder="0">
+                </div>
+                <ion-icon name="arrow-forward" style="color: var(--accent); margin-top: 20px;"></ion-icon>
+                <div class="input-group">
+                    <label class="label">ယခုလ</label>
+                    <input type="number" id="currReading" class="input-field" placeholder="0">
+                </div>
+            </div>
+        </div>
+
+        <div id="mode-units" class="mode-content hidden">
+            <div class="input-group">
+                <label class="label">စုစုပေါင်းယူနစ် (kWh)</label>
+                <input type="number" id="directUnits" class="input-field" placeholder="0">
+            </div>
+        </div>
+
+        <div id="mode-appliances" class="mode-content hidden">
+            <div id="appliance-list">
+                </div>
+        </div>
+
+        <button class="calc-btn" onclick="calculate()">တွက်ချက်မည်</button>
+    </div>
+
+    <div id="result-area">
+        <div class="total-cost" id="res-total">0 ကျပ်</div>
+        <div class="sub-text" id="res-sub">ယူနစ်: 0 | လစဉ်ကြေး: 0 ကျပ်</div>
+        <div id="tier-breakdown"></div>
+    </div>
+
+    <div class="footer">
+        <h3>Designed by MgKalNgar 👨‍💻</h3>
+        <p>Version 1.0 (PWA)</p>
+    </div>
+
+    <div id="historyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>မှတ်တမ်း</h2>
+                <button class="close-btn" onclick="closeModal('historyModal')"><ion-icon name="close"></ion-icon></button>
+            </div>
+            <div id="history-list"></div>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>သတ်မှတ်ချက်များ</h2>
+                <button class="close-btn" onclick="closeModal('settingsModal')"><ion-icon name="close"></ion-icon></button>
+            </div>
+            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 20px;">ပစ္စည်းများ၏ Watt အားကို ပြင်ဆင်နိုင်ပါသည်။</p>
+            <div id="settings-list"></div>
+            <button onclick="resetSettings()" style="width:100%; margin-top:20px; padding:15px; background:none; border:1px dashed var(--danger); color:var(--danger); border-radius:12px;">မူလအတိုင်း ပြန်ထားမည်</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+</html>

@@ -99,7 +99,6 @@
             <p>၂၀၂၄ စက်တင်ဘာ နှုန်းထားသစ် ⚡</p>
         </div>
         <div style="display: flex;">
-            <button class="icon-btn" onclick="openModal('settingsModal')"><ion-icon name="settings-outline"></ion-icon></button>
             <button class="icon-btn" onclick="openModal('historyModal')"><ion-icon name="time-outline"></ion-icon></button>
         </div>
     </div>
@@ -133,6 +132,12 @@
         </div>
 
         <div id="mode-appliances" class="mode-content hidden">
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+            <button class="icon-btn" onclick="openModal('settingsModal')" style="display: flex; align-items: center; gap: 5px; font-size: 14px; padding: 8px 15px;">
+                <ion-icon name="settings-outline"></ion-icon>
+                <span>Watt ပြင်ရန်</span>
+            </button>
+        </div>
             <div id="appliance-list">
                 </div>
         </div>
